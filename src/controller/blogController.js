@@ -21,4 +21,28 @@ const createBlogs = async function (req, res) {
     }
 }
 
+
+exports.getBlog = async (req, res) => {
+    try {
+        let query = req.query;
+        
+        if (Object.keys(query).length == 0) {
+      let blog = await blogModel.find({ isDeleted: false, isPublished: true });
+      res.status(200).send({ msg: blog });
+      if (blog.length == 0) {
+        res.status(404).send("No blogs found");
+      }
+    }
+    
+    if (Object.keys(query).length > 0) {
+        let { category, subcategory, tags, authorId } = query;
+        
+        let filteredBlogs = await blogModel.find(query);
+        res.status(200).send({ msg: filteredBlogs });
+    }
+} catch (error) {
+    res.status(404).send({ message: error });
+}
+};
+
 module.exports.createBlogs= createBlogs

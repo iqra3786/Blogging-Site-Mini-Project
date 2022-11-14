@@ -12,7 +12,7 @@ mongoose.connect("mongodb+srv://group22:1234@group22databse.uvtoalh.mongodb.net/
     useNewUrlParser: true
 })
 
-.then(()=> console.log("MongoDB is connected, Good:uck for the project!!!"))
+.then(()=> console.log("MongoDB is connected, Goodluck for the project!!!"))
 .catch(err => console.log(err))
 
 
