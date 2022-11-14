@@ -10,10 +10,15 @@
     "type": "git",
     "url": "git+https://github.com/iqra3786/project-blogGroup22.git"
   },
-  "author": "",
+  "author": "group-22",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/iqra3786/project-blogGroup22/issues"
   },
-  "homepage": "https://github.com/iqra3786/project-blogGroup22#readme"
+  "homepage": "https://github.com/iqra3786/project-blogGroup22#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^6.7.2",
+    "nodemon": "^2.0.20"
+  }
 }
