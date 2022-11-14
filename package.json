@@ -1,0 +1,19 @@
+{
+  "name": "project-bloggroup22",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iqra3786/project-blogGroup22.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/iqra3786/project-blogGroup22/issues"
+  },
+  "homepage": "https://github.com/iqra3786/project-blogGroup22#readme"
+}
