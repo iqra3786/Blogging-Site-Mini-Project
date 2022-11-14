@@ -1,4 +1,5 @@
 const authorModel = require("../models/authorModel")
+const validation = require('../validate/validation')
 
 const createAuthors = async function(req, res){
     try{
@@ -17,8 +18,8 @@ const createAuthors = async function(req, res){
 
         if (typeof (firstName) === "string" && firstName.trim().length !== 0) {
             if (typeof (lastName) === "string" && lastName.trim().length !== 0) {
-                if (typeof (email) === "string" && email.trim().length !== 0) {
-                    if (typeof (password) === "string" && password.trim().length !== 0) {
+                if (typeof (email) === "string" && email.trim().length !== 0 && validation.isValidEmail(email)) {
+                    if (typeof (password) === "string" && password.trim().length !== 0 && validation.isValidPassword(password)) {
                         const savedAuthorData = await authorModel.create({ firstName, lastName, title, email, password });
                         if (!savedAuthorData) {
                             return res.status(400).send({ status: false, msg: "cannot create data" })

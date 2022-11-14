@@ -5,6 +5,6 @@ const blogController= require("../controller/blogController.js")
 
 
 router.post('/authors', authorController.createAuthors)
-
+router.post('/blogs',blogController.createBlogs)
 
 module.exports=router
