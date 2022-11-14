@@ -4,7 +4,10 @@
 Repository for backend cohort - Lithium
 
 Blogging Site Mini Project Requirement
+
 Phase I
+===========
+
 Models
 Author Model
 { fname: { mandatory}, lname: {mandatory}, title: {mandatory, enum[Mr, Mrs, Miss]}, email: {mandatory, valid email, unique}, password: {mandatory} }
@@ -45,7 +48,11 @@ If the blog document doesn't exist then return an HTTP status of 404 with a body
 DELETE /blogs?queryParams
 Delete blog documents by category, authorid, tag name, subcategory name, unpublished
 If the blog document doesn't exist then return an HTTP status of 404 with a body like this
+
+
+
 Phase II
+=======================
 Add authentication and authroisation feature
 POST /login
 Allow an author to login with their email and password. On a successful login attempt return a JWT token contatining the authorId in response body like this
