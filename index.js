@@ -1,6 +1,7 @@
 const { default: mongoose } = require('mongoose');
 const express = require("express");
 const bodyParser = require("body-parser");
+const route = require('./src/route/route.js')
 
 const app = express();
 
