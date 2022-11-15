@@ -18,6 +18,7 @@
   "homepage": "https://github.com/iqra3786/project-blogGroup22#readme",
   "dependencies": {
     "express": "^4.18.2",
+    "moment": "^2.29.4",
     "mongoose": "^6.7.2",
     "nodemon": "^2.0.20"
   }
