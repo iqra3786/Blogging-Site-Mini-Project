@@ -2,6 +2,7 @@ const blogModel = require("../models/blogModel")
 const authorModel = require("../models/authorModel")
 const mongoose = require('mongoose')
 const validation = require('../validate/validation')
+const { populate } = require("../models/blogModel")
 
 
 const createBlogs = async function (req, res) {
@@ -24,20 +25,21 @@ const createBlogs = async function (req, res) {
 
 exports.getBlog = async (req, res) => {
     try {
-        let query = req.query;
+        let queryparam = req.query;
         
-        if (Object.keys(query).length == 0) {
-      let blog = await blogModel.find({ isDeleted: false, isPublished: true });
+        if (Object.keys(queryparam).length == 0) {
+      let blog = await blogModel.find({ isDeleted: false, isPublished: true }).populate("authorId");
       res.status(200).send({ msg: blog });
       if (blog.length == 0) {
         res.status(404).send("No blogs found");
       }
     }
     
-    if (Object.keys(query).length > 0) {
-        let { category, subcategory, tags, authorId } = query;
+    if (Object.keys(queryparam).length > 0) {      
+        let { category, subcategory, tags, authorId,title } = queryparam;
+
         
-        let filteredBlogs = await blogModel.find(query);
+        let filteredBlogs = await blogModel.find(queryparam).populate("authorId");
         res.status(200).send({ msg: filteredBlogs });
     }
 } catch (error) {
