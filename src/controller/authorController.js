@@ -1,5 +1,6 @@
 const authorModel = require("../models/authorModel")
 const validation = require('../validate/validation')
+const jwt = require("jsonwebtoken")
 
 const createAuthors = async function(req, res){
     try{
@@ -36,5 +37,33 @@ const createAuthors = async function(req, res){
 
     }}
 
+    const authorLogin= async function(req,res){
+        let credentials=req.body
+        let {email,password}=credentials
+        if(Object.keys(credentials)==0){
+            res.status(400).send({msg:"email and password are required"})
+        }
+if(!validation.isValidEmail(email)){
+    res.status(400).send({msg:"invalid email"})
+}
+if(!validation.isValidPassword(password)){
+    res.status(400).send({msg:"invalid password"})
+}
+let authorDetail=await authorModel.findOne({email:email,password:password})
+console.log(authorDetail._id)
+if(!authorDetail){
+    res.status(404).send({msg:"this author is not present at that time "})
+}
+let token=jwt.sign({
+  id:authorDetail._id,
+  email:authorDetail.email,
+  password:authorDetail.password
+},"khul ja sim sim",{ expiresIn: '24h'})
+res.setHeader("x-api-key", token)
+res.status(200).send({status:true,data:token})
+}
+
+
 
 module.exports.createAuthors= createAuthors
+module.exports.authorLogin=authorLogin
