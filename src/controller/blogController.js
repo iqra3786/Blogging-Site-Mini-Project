@@ -7,7 +7,6 @@ const moment = require("moment");
 
 const createBlogs = async function (req, res) {
   try {
-    const id = req.body.authorId;
     let data = ({
       title,
       body,
@@ -43,6 +42,7 @@ exports.getBlog = async (req, res) => {
       let blog = await blogModel
         .find({ isDeleted: false, isPublished: true })
         .populate("authorId");
+        console.log(blog)
       res.status(200).send({ msg: blog });
       if (blog.length == 0) {
         res.status(404).send("No blogs found");
@@ -80,15 +80,15 @@ const updateDetails = async function (req, res) {
     let today = moment().format("YYYY-DD-MM,h:mm:ss a");
 
     const updateFileds = await blogModel.findOneAndUpdate(
-      { _id: blogId },
+      { _id: blogId }, //Filter condition
       {
         title: title,
         body: body,
-        $push: { tags: tags, subcategory: subcategory },
+        $push: { tags: tags, subcategory: subcategory }, // Updation Field
         isPublished: true,
         publishedAt: today,
       },
-      { new: true }
+      { new: true }  // Returns updated result
     );
     console.log(updateFileds);
 
@@ -116,6 +116,9 @@ const DeleteData = async function (req, res) {
     res.status(500).send(err.message);
   }
 };
+
+
+
 exports.queryApi = async function (req, res) {
   try {
     let { category, authorid, tags, subcategory, unpublished } = req.query;
