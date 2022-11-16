@@ -56,7 +56,7 @@ exports.getBlog = async (req, res) => {
       res.status(200).send({ msg: filteredBlogs });
     }
   } catch (error) {
-    res.status(404).send({ message: error });
+    res.status(500).send({ message: error });
   }
 };
 
