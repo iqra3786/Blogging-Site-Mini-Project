@@ -7,7 +7,6 @@ const moment = require("moment");
 
 const createBlogs = async function (req, res) {
   try {
-    const id = req.body.authorId;
     let data = ({
       title,
       body,
@@ -56,7 +55,7 @@ exports.getBlog = async (req, res) => {
       res.status(200).send({ msg: filteredBlogs });
     }
   } catch (error) {
-    res.status(404).send({ message: error });
+    res.status(500).send({ message: error });
   }
 };
 
