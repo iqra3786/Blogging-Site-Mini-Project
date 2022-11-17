@@ -16,19 +16,47 @@ const createBlogs = async function (req, res) {
       subcategory,
       isPublished,
     } = req.body);
+    
     // validation start
+    if(!(body&&authorId&&title&&category&&subcategory&&tags)){
+      return res.status(400).send({status:false,msg: "this data is required"})}
     if (Object.keys(data).length == 0) {
       return res
         .status(400)
-        .send({ status: false, msg: "invalid request put valid data in body" });
-    }
+        .send({ status: false, msg: "invalid request put valid data in body" });}
+
+    if (!mongoose.isValidObjectId(authorId)) {
+      res.status(400).send({status: false, msg: "invalid author id"})}
+
+    if(!typeof(title) == String && title.trim().length==0){res.status(400).send({status: false, msg: "title name is invalid"})}
+    if(!typeof(body) == String && body.trim().length==0){res.status(400).send({status: false, msg: "body format is invalid"})}
+    if(!typeof(category) == String && category.trim().length==0){res.status(400).send({status: false, msg: "category is invalid"})}
+    if(!typeof(subcategory) == Array && subcategory.length==0 ){res.status(400).send({status: false, msg: "subcategory is invalid"})}
+    if(!typeof(tags) == Array && tags.length==0){res.status(400).send({status: false, msg: "tag is invalid"})}
+    if(!typeof(isPublished) == Boolean){res.status(400).send({status: false, msg: "isPublished should be true or false"})}
+
+     for(let i=0; i<subcategory.length; i++){
+        if(subcategory[i]!==typeof("string"|| subcategory[i].trim().length==0)){
+          res.status(400).send({status: false, msg: "element of subcategory is invalid"})}}
+
+    for(let i=0; i<tags.length; i++){
+      if(tags[i]!==typeof("string")|| tags[i].trim().length==0){
+  res.status(400).send({status: false, msg: "element of tags is invalid"})}}
+
     //validation end
-    const saveData = await blogModel.create(data);
-    return res.status(201).send({ status: true, data: saveData });
-  } catch (error) {
-    return res.status(500).send({ status: false, msg: error.message });
-  }
-};
+
+    data = await blogModel.create(data);
+    return res.status(201).send({ status: true, data: {
+      title:title,
+      body:body,
+      authorId:authorId,
+      category:category,
+      tags:tags,
+      subcategory:subcategory,
+      isPublished:isPublished} });}
+      
+      catch (error) {
+    return res.status(500).send({ status: false, msg: error.message }) }};
 
 
 //...............................................................GET API's..............................................................................
@@ -37,27 +65,23 @@ const createBlogs = async function (req, res) {
 exports.getBlog = async (req, res) => {
   try {
     let queryparam = req.query;
-
     if (Object.keys(queryparam).length == 0) {
       let blog = await blogModel
         .find({ isDeleted: false, isPublished: true })
         .populate("authorId");
-      res.status(200).send({ msg: blog });
+      res.status(200).send({status:true, msg: blog });
       if (blog.length == 0) {
-        res.status(404).send("No blogs found");
-      }
-    }
+        res.status(404).send({status:false, msg:"No blogs found"});}}
 
     if (Object.keys(queryparam).length > 0) {
-      let { category, subcategory, tags, authorId, title } = queryparam;
-
       let filteredBlogs = await blogModel.find(queryparam).populate("authorId");
-      res.status(200).send({ msg: filteredBlogs });
-    }
-  } catch (error) {
-    res.status(500).send({ message: error });
-  }
-};
+      if(filteredBlogs.length==0){
+        res.status(404).send({status:false, msg:"No blogs found with these filter"})}
+
+      res.status(200).send({status:true, data: filteredBlogs });}}
+
+     catch (error) {
+    res.status(500).send({status:false, Error: error.message });}};
 
 
 //..............................................................................Update API's.............................................................
@@ -66,37 +90,34 @@ exports.getBlog = async (req, res) => {
 const updateDetails = async function (req, res) {
   try {
     const blogId = req.params.blogId;
+    
     const {
       title,
       body,
       tags,
-      subcategory,
-      publishedAt,
-      isPublished,
-      isDeleted,
+      subcategory
     } = req.body;
     console.log(req.body);
     let today = moment().format("YYYY-DD-MM,h:mm:ss a");
 
     const updateFileds = await blogModel.findOneAndUpdate(
-      { _id: blogId },
+      { _id: blogId }, //Filter condition
       {
         title: title,
-        body: body,
-        $push: { tags: tags, subcategory: subcategory },
+        body: body,   
+        $push: { tags: tags, subcategory: subcategory }, // Updation Field
         isPublished: true,
         publishedAt: today,
       },
-      { new: true }
-    );
-    console.log(updateFileds);
+      { new: true }  ); // Returns updated result
 
-    return res.status(200).send({ msg: updateFileds });
-  } catch (err) {
-    console.log("This is the error: ", err.message);
-    res.status(500).send({ error: err.message });
-  }
-};
+    if(!updateFields){
+      res.status(400).send({msg: "can not update this blog"})}
+
+    return res.status(200).send({status:true, data: updateFileds });}
+    
+    catch (err) {
+    res.status(500).send({status:false, error: err.message })}};
 
 
 //.............................................................DELETE API's..............................................................................
@@ -104,36 +125,42 @@ const updateDetails = async function (req, res) {
 
 const DeleteData = async function (req, res) {
   try {
-    let blogId = req.params.blogId;
+    const blogId = req.params.blogId;
     let detail = await blogModel.findOneAndUpdate(
       { _id: blogId },
       { isDeleted: true, deletedAt: new Date() },
-      { new: true }
-    );
-    return res.status(200).send();
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
-};
+      { new: true });
+
+    if(!detail){
+      res.status(404).send({status:false, msg:"can not delete the blog because it is not available"})}
+
+    return res.status(200).send();} 
+    
+    catch (err) {
+    res.status(500).send({status:false, Error:err.message});}};
+
+
+
 exports.queryApi = async function (req, res) {
   try {
-    let { category, authorid, tags, subcategory, unpublished } = req.query;
-
     let detail = await blogModel.updateMany(
       req.query,
       { isDeleted: true, deletedAt: new Date() },
       { new: true }
     );
+
     console.log(Object.keys(detail));
     if (detail["modifiedCount"] == 0) {
-      res.status(404).send("No blogs found");
-    }
+      res.status(404).send({status:false, msg:"No blogs found"});}
+
+    if(!detail){
+      res.status(400).send({status:false, msg:"can not delete these blogs. May be they don't exist!!"})}
+
     res.status(200).send();
-    console.log(detail);
-  } catch (err) {
-    res.status(500).send({ err });
-  }
-};
+    console.log(detail);}
+    
+    catch (err) {
+    res.status(500).send({status:false, Error: err.message })}};
 
 module.exports.createBlogs = createBlogs;
 module.exports.updateDetails = updateDetails;
