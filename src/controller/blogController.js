@@ -65,6 +65,12 @@ const createBlogs = async function (req, res) {
 exports.getBlog = async (req, res) => {
   try {
     let queryparam = req.query;
+    let{authorId}= queryparam
+    
+    if(!mongoose.isValidObjectId(authorId)){
+      res.status(400).send({status:false, msg:"please provide valid authorId"})}
+
+
     if (Object.keys(queryparam).length == 0) {
       let blog = await blogModel
         .find({ isDeleted: false, isPublished: true })
