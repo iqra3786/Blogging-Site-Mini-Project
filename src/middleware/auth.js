@@ -15,8 +15,7 @@ try{
 
    catch(err){ 
         res.status(401).send({status: false,msg:"Authentication is missing",msg2:err.message})}
-
-req.identity = verifyToken.id
+req.identity= verifyToken.id
 console.log(req.identity)
     next()}
 
@@ -52,6 +51,9 @@ else{
 
  catch(err){
          res.status(500).send({status:false, Error:err.message})}}
+
+
+        
  
 module.exports.authenticate = authenticate
 module.exports.authorisation = authorisation

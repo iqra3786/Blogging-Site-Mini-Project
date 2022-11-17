@@ -1,5 +1,5 @@
 
-//----------------------------  email validation  ----------------------------------------------------
+//------------------------------------------  EMAIL VALIDATION  ----------------------------------------------------
 
 
 const isValidEmail = (value) => {
@@ -9,7 +9,7 @@ const isValidEmail = (value) => {
 }
 
 
-//----------------------------  password validation  ----------------------------------------------------
+//------------------------------------------  PASSWORD VALIDATION  ----------------------------------------------------
 
 
 const isValidPassword = (value) =>{
@@ -18,7 +18,7 @@ const isValidPassword = (value) =>{
     return regex.test(value)
 }
 
-//----------------------------  name validation  ----------------------------------------------------
+//-------------------------------------------  NAME VALIDATION  ----------------------------------------------------
 
 
 const isValidName= (value) =>{
@@ -26,6 +26,8 @@ const isValidName= (value) =>{
     const regex = /^[a-z ,.'-]+$/i
     return regex.test(value)
 }
+
+
 
 
 module.exports.isValidEmail = isValidEmail
