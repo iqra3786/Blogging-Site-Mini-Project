@@ -16,15 +16,42 @@ const createBlogs = async function (req, res) {
       subcategory,
       isPublished,
     } = req.body);
+    
     // validation start
+    if(!(body&&authorId&&title&&category&&subcategory&&tags)){
+      return res.status(400).send({status:false,msg: "this data is required"})}
     if (Object.keys(data).length == 0) {
       return res
         .status(400)
         .send({ status: false, msg: "invalid request put valid data in body" });
     }
+    if (!mongoose.isValidObjectId(authorId)) {
+      res.status(400).send({status: false, msg: "invalid author id"})
+    }
+    if(!typeof(title) == String){res.status(400).send({status: false, msg: "title name is invalid"})}
+    if(!typeof(body) == String){res.status(400).send({status: false, msg: "body format is invalid"})}
+    if(!typeof(category) == String){res.status(400).send({status: false, msg: "category is invalid"})}
+    if(!typeof(subcategory) == Array){res.status(400).send({status: false, msg: "subcategory is invalid"})}
+    if(!typeof(tags) == Array){res.status(400).send({status: false, msg: "tag is invalid"})}
+    if(!typeof(isPublished) == Boolean){res.status(400).send({status: false, msg: "isPublished should be true or false"})}
+
+    
+    // let check = subcategory.find((ele)=> typeof (ele) !== String)
+    // if(!check){res.status(400).send({status: false, msg: "element of subcategory is invalid"})}
+
+    //  check = tags.find((ele)=> typeof (ele) !== String)
+    // if(check){res.status(400).send({status: false, msg: "element of tags is invalid"})}
+
     //validation end
     const saveData = await blogModel.create(data);
-    return res.status(201).send({ status: true, data: saveData });
+    return res.status(201).send({ status: true, data: {
+      title:title,
+      body:body,
+      authorId:authorId,
+      category:category,
+      tags:tags,
+      subcategory:subcategory,
+      isPublished:isPublished} });
   } catch (error) {
     return res.status(500).send({ status: false, msg: error.message });
   }
@@ -83,7 +110,7 @@ const updateDetails = async function (req, res) {
       { _id: blogId }, //Filter condition
       {
         title: title,
-        body: body,
+        body: body,   
         $push: { tags: tags, subcategory: subcategory }, // Updation Field
         isPublished: true,
         publishedAt: today,
@@ -91,7 +118,7 @@ const updateDetails = async function (req, res) {
       { new: true }  // Returns updated result
     );
     console.log(updateFileds);
-
+ 
     return res.status(200).send({ msg: updateFileds });
   } catch (err) {
     console.log("This is the error: ", err.message);

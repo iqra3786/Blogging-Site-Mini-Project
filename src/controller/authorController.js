@@ -17,11 +17,17 @@ const createAuthors = async function(req, res){
             return res.status(400).send({ status: false, msg: "please enter correct title eg Mr,Mrs,Miss" })
         }
 
-        if (typeof (firstName) === "string" && firstName.trim().length !== 0) {
-            if (typeof (lastName) === "string" && lastName.trim().length !== 0) {
+        if (typeof (firstName) === "string" && firstName.trim().length !== 0&& validation.isValidName(firstName)) {
+            if (typeof (lastName) === "string" && lastName.trim().length !== 0&& validation.isValidName(lastName)) {
                 if (typeof (email) === "string" && email.trim().length !== 0 && validation.isValidEmail(email)) {
-                    if (typeof (password) === "string" && password.trim().length !== 0 && validation.isValidPassword(password)) {
-                        const savedAuthorData = await authorModel.create({ firstName, lastName, title, email, password });
+                    if (typeof (password) === "string" && password.trim().length !== 0 && validation.isValidPassword(password))
+                    { 
+                        const savedAuthorData = await authorModel.create({ 
+                            firstName: firstName.replaceAll(" ", "").charAt(0).toUpperCase() + firstName.slice(1).toLowerCase().replaceAll(" ", ""), 
+                            lastName:lastName.replaceAll(" ", "").charAt(0).toUpperCase() + lastName.slice(1).toLowerCase().replaceAll(" ", ""), 
+                            title:title.replaceAll(" ", ""), 
+                            email:email.replaceAll(" ", ""), 
+                            password:password.replaceAll(" ", "") });
                         if (!savedAuthorData) {
                             return res.status(400).send({ status: false, msg: "cannot create data" })
                         }

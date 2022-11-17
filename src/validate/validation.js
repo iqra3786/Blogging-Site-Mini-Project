@@ -10,6 +10,14 @@ const isValidPassword = (value) =>{
     return re.test(value)
 }
 
+const isValidName= (value) =>{
+    if (typeof value === "undefined" || value === null) return false
+    const re = /^[a-z ,.'-]+$/i
+    return re.test(value)
+}
+
 
 module.exports.isValidEmail = isValidEmail
 module.exports.isValidPassword= isValidPassword
+module.exports.isValidName= isValidName
+
