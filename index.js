@@ -6,7 +6,6 @@ const route = require('./src/route/route.js')
 const app = express();
 
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended:true}))
 
 mongoose.connect("mongodb+srv://group22:1234@group22databse.uvtoalh.mongodb.net/group22Database",{
     useNewUrlParser: true

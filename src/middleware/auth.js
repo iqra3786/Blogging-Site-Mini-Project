@@ -23,31 +23,31 @@ catch(err){
     res.status(500).send({status:false, Error: err.message})}}
 
 
-//------------------------------------------  Authorisation ----------------------------------------------------
+//------------------------------------------  Authorisation -----------------------------------------------------------------------------
 
 
 const authorisation = async (req,res,next) => {
      try{
- const  blogId = req.params.blogId
- const query= req.query
- if(Object.keys(req.params).length==0 || Object.keys(query).length == 0){
-    res.status(400).send({status:false, msg:"mandatory field does not present in the url"})}
+ let  blogId = req.params.blogId
+//   blogId = req.query.blogId
+// //  if(Object.keys(blogId).length==0 || Object.keys(query).length == 0){
+// //     res.status(400).send({status:false, msg:"mandatory field does not present in the url"})}
 
- if(!isValidObjectId(blogId)){
-    res.status(400).send({status: false, msg:"please use valid ObjectId!!"})}
+// //  if(!isValidObjectId(blogId)){
+// //     res.status(400).send({status: false, msg:"please use valid ObjectId!!"})}
  
    const fetchDetails = await blogModel.findOne({_id:blogId})
   if(!fetchDetails) 
    res.status(400).send("this blog doesn't exist")
 
-  let authorId = fetchDetails.authorId._id
+  let authorId = fetchDetails.authorId
    let verifyToken= req.identity
    console.log(verifyToken)
     if(verifyToken == authorId)
      next()
 
 else{
-    res.status(403).send({status: false,msg:"You are unauthoreized to do this!!!"})}}
+    res.status(403).send({status: false,msg:"You are unauthorized to do this!!!"})}}
 
  catch(err){
          res.status(500).send({status:false, Error:err.message})}}

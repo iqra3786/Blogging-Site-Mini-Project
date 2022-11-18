@@ -17,6 +17,9 @@ const createBlogs = async function (req, res) {
       tags,
       subcategory,
       isPublished,
+      isDeleted,
+      deletedAt,
+      publishedAt,
     } = req.body);
     
     // validation start
@@ -30,32 +33,52 @@ const createBlogs = async function (req, res) {
     if (!mongoose.isValidObjectId(authorId)) {
       res.status(400).send({status: false, msg: "invalid author id"})}
 
-    if(!typeof(title) == String && title.trim().length==0){res.status(400).send({status: false, msg: "title name is invalid"})}
-    if(!typeof(body) == String && body.trim().length==0){res.status(400).send({status: false, msg: "body format is invalid"})}
-    if(!typeof(category) == String && category.trim().length==0){res.status(400).send({status: false, msg: "category is invalid"})}
-    if(!typeof(subcategory) == Array && subcategory.length==0 ){res.status(400).send({status: false, msg: "subcategory is invalid"})}
-    if(!typeof(tags) == Array && tags.length==0){res.status(400).send({status: false, msg: "tag is invalid"})}
-    if(!typeof(isPublished) == Boolean){res.status(400).send({status: false, msg: "isPublished should be true or false"})}
+    if(typeof(title) !== String && title.trim().length==0){res.status(400).send({status: false, msg: "title name is invalid"})}
+    if(typeof(body) !== String && body.trim().length==0){res.status(400).send({status: false, msg: "body format is invalid"})}
+    if(typeof(category) !== String && category.trim().length==0){res.status(400).send({status: false, msg: "category is invalid"})}
+    if(typeof(subcategory) !== Array && subcategory.length==0 ){res.status(400).send({status: false, msg: "subcategory is invalid"})}
+    if(typeof(tags) !== Array && tags.length==0){res.status(400).send({status: false, msg: "tag is invalid"})}
+    if(typeof(isPublished) !== Boolean && isPublished == true){res.status(400).send({status: false, msg: "isPublished should be false at the time of creation."})}
+    if(isPublished == false){publishedAt = null}
+    if(typeof(isDeleted) !== Boolean && isDeleted == true){res.status(400).send({status: false, msg: "isDeleted should be false at the time of creation."})}
+    if(isDeleted == false){deletedAt = null}
+
+
+    let arr = []
 
      for(let i=0; i<subcategory.length; i++){
-        if(subcategory[i]!==typeof("string"|| subcategory[i].trim().length==0)){
-          res.status(400).send({status: false, msg: "element of subcategory is invalid"})}}
+      subcategory[i] = subcategory[i].toString()
+      arr.push(subcategory[i])
+    }
+      //   if(subcategory[i]!==typeof("string")|| (subcategory[i].trim().length==0)){
+      //     res.status(400).send({status: false, msg: "element of subcategory is invalid"})}}
+      let newArr = []
 
-    for(let i=0; i<tags.length; i++){
-      if(tags[i]!==typeof("string")|| tags[i].trim().length==0){
-  res.status(400).send({status: false, msg: "element of tags is invalid"})}}
+      for(let i=0; i<tags.length; i++){
+       tags[i] = tags[i].toString()
+       newArr.push(tags[i])
+     }
+
+  //   for(let i=0; i<tags.length; i++){
+  //     if(tags[i]!==typeof("string")|| tags[i].trim().length==0){
+  // res.status(400).send({status: false, msg: "element of tags is invalid"})}}
 
     //validation end
 
-    data = await blogModel.create(data);
-    return res.status(201).send({ status: true, data: {
-      title:title,
-      body:body,
-      authorId:authorId,
-      category:category,
-      tags:tags,
-      subcategory:subcategory,
-      isPublished:isPublished} });}
+    data = await blogModel.create(   
+   {   title: title,
+      body: body,
+      authorId: authorId,
+      category: category,
+      tags: newArr,
+      subcategory:arr,
+      isPublished:isPublished,
+      isDeleted:isDeleted,
+      deletedAt:deletedAt,
+      publishedAt:publishedAt,
+    }
+);
+    return res.status(201).send({ status: true, data:data});}
       
       catch (error) {
     return res.status(500).send({ status: false, msg: error.message }) }};
@@ -67,10 +90,10 @@ const createBlogs = async function (req, res) {
 exports.getBlog = async (req, res) => {
   try {
     let queryparam = req.query;
-    let{authorId}= queryparam
+    let{authorId,title,body, category, subcategory, tags}= queryparam
     
-    if(!mongoose.isValidObjectId(authorId)){
-      res.status(400).send({status:false, msg:"please provide valid authorId"})}
+    // if(!mongoose.isValidObjectId(authorId)){
+    //   res.status(400).send({status:false, msg:"please provide valid authorId"})}
 
 
     if (Object.keys(queryparam).length == 0) {
@@ -82,7 +105,16 @@ exports.getBlog = async (req, res) => {
         res.status(404).send({status:false, msg:"No blogs found"});}}
 
     if (Object.keys(queryparam).length > 0) {
-      let filteredBlogs = await blogModel.find(queryparam).populate("authorId");
+      let filteredBlogs = await blogModel.find({
+        authorId:authorId,
+        title: title,
+        body:body, 
+        category: category,
+         subcategory:subcategory, 
+         tags:tags,
+         isDeleted: false, 
+         isPublished: true
+        }).populate("authorId");
       if(filteredBlogs.length==0){
         res.status(404).send({status:false, msg:"No blogs found with these filter"})}
 
@@ -98,69 +130,62 @@ exports.getBlog = async (req, res) => {
 
 const updateDetails = async function (req, res) {
   try {
-    const blogId = req.params.blogId;
-    
-    const {
-      title,
-      body,
-      tags,
-      subcategory,
-      category
-    } = req.body;
-    console.log(req.body);
-
-     if(title){
-    if(title.trim().length==0 || title==undefined || typeof title!== String){
-    res.status(400).send({status:false, msg: "can not update blog with invalid title."})}
-
-    if(body){
-    if(body.trim().length==0 || body==undefined || typeof body!== String){
-      res.status(400).send({status:false, msg: "can not update blog with invalid body."})}}
-
-      if(category){
-        if(category.trim().length==0 || category==undefined || typeof category!== String){
-          res.status(400).send({status:false, msg: "can not update blog with invalid category."})}}  
-
-      if(tags){
-        if(tags.length==0|| tags==undefined || typeof tags!== Array){
-        res.status(400).send({status:false, msg: "can not update blog with invalid body."})}}
-
-      if(tags){
-        for(let i=0; i<tags.length; i++){
-          if(tags[i]!==typeof("string")|| tags[i].trim().length==0){
-      res.status(400).send({status: false, msg: "element of tags is invalid"})}}}
-
-      if(subcategory){
-        if(subcategory.length==0|| subcategory==undefined || typeof subcategory!== Array){
-        res.status(400).send({status:false, msg: "can not update blog with invalid subcategory."})}}
-
-        if(subcategory){
-          for(let i=0; i<subcategory.length; i++){
-            if(subcategory[i]!==typeof("string")|| subcategory[i].trim().length==0){
-        res.status(400).send({status: false, msg: "element of subcategory is invalid"})}}}
-
-
+   
+    let data = req.body
+    let id = req.params.blogId
+    let authorloged = req.identity //identity is present in request that we have set in authorization middleware it contains loggedIn AuthorId
+    if (Object.keys(data).length == 0) {  //validation to check if body empty
+        return res.status(400).send("Please Enter data for updation");
     }
-    let today = moment().format("YYYY-DD-MM,h:mm:ss a");
+    const checkBlogId = await blogModel.findById(id)  //finding data using blogId
+    if (!checkBlogId) return res.status(404).send({ msg: "No blog found with this blogId" });
+    if (checkBlogId.isDeleted === true) return res.status(400).send({ msg: "Blog is deleted" });
+
+    if (checkBlogId.authorId != authorloged) { //In this block verifying BlogId belongs to same author or not
+            return res.status(403).send({ status: false, data: "Not authorized" })
+     }
+
+    //here storing data comming from body inside previous document
+    if (data.title) checkBlogId.title = data.title;
+    if (data.category) checkBlogId.category = data.category;
+    if (data.body) checkBlogId.body = data.body;
+
+    //------for tags that is array-----------
+    if (data.tags) {
+        if (typeof data.tags === "object") {
+            checkBlogId.tags.push(...data.tags)
+        }
+        else if (typeof data.tags === "string") {
+            checkBlogId.tags.push(data.tags)
+        }
+        else {
+            return res.status(400).send({ status: false, msg: "Please send tags in array" })
+        }
+    }
+    //-----------for subcategory that is arry------------
+    if (data.subcategory) {
+        if (typeof data.subcategory === 'object') {
+            checkBlogId.subcategory.push(...data.subcategory)
+        } else if (typeof data.subcategory === "string") {
+            checkBlogId.subcategory.push(data.subcategory)
+        }
+        else {
+            return res.status(400).send({ status: false, msg: "Please send subcategory in array" })
+        }
+    }
+    if (typeof data.isPublished === 'boolean') {
+        if (data.isPublished == true) {
+            checkBlogId.publishedAt = new Date();  //timestamp will add incase published is set to true
+            checkBlogId.isPublished = true
+        } if (data.isPublished == false) {
+            checkBlogId.publishedAt = ""
+            checkBlogId.isPublished = false
+        }
+    }
+    checkBlogId.save()
+    res.status(200).send({ status: true, msg: "blog updated", data: checkBlogId })
     
-    let identity= req.identity
-
-    const updateFileds = await blogModel.findOneAndUpdate(
-      { _id: blogId, authorId : identity, isDeleted: false }, //Filter condition
-      {
-        title: title,
-        body: body,   
-        $push: { tags: tags, subcategory: subcategory }, // Updation Field
-        isPublished: true,
-        publishedAt: today,
-        category:category
-      },
-      { new: true }  ); // Returns updated result
-
-    if(!updateFields){
-      res.status(400).send({status: false, msg: "can not update this blog"})}
-
-    return res.status(200).send({status:true, data: updateFileds });}
+  }
     
     catch (err) {
     res.status(500).send({status:false, error: err.message })}};
@@ -172,21 +197,27 @@ const updateDetails = async function (req, res) {
 
 const deleteData = async function (req, res) {
   try {
-    const blogId = req.params.blogId;
+    let data = req.params
+    let id = data.blogId
+    let authorloged = req.identity //identity is present in request that we have set in authorization middleware it contains loggedIn AuthorId
+    if (id) {
+        let findblog = await blogModel.findById(id)
+        if (!findblog) return res.status(404).send({ status: false, msg: `no blog found by this BlogID:${id}` });
+
+        if (findblog.authorId != authorloged) {
+            return res.status(403).send({ status: false, data: "Not authorized" })
+        }
+        //Validation to check blog is already deleted or not
+        if (findblog.isDeleted !== false) { return res.status(404).send({ status: false, msg: "Blog is already deleted" }) };
+        await blogModel.findOneAndUpdate(
+            { _id: id },
+            {
+                $set: { isDeleted: true, deletedAt: new Date()}
+            })
+        res.status(200).send({ status: true, msg: "Succesfull" });
+    }
     
-    
-    let identity= req.identity
-
-    let detail = await blogModel.findOneAndUpdate(
-      { _id: blogId, authorId: identity, isDeleted:false },
-      { isDeleted: true, deletedAt: new Date() },
-      { new: true });
-      
-
-    if(!detail){
-      res.status(404).send({status:false, msg:"can not delete the blog."})}
-
-    return res.status(200).send();} 
+  } 
     
     catch (err) {
     res.status(500).send({status:false, Error:err.message});}};
@@ -245,7 +276,9 @@ exports.deleteByQuery = async function (req, res) {
       res.status(400).send({status:false, msg:"can not delete these blogs. May be they don't exist at your end!!"})}
 
     res.status(200).send();
-    console.log(detail);}
+    console.log(detail);
+    
+  }
     
     catch (err) {
     res.status(500).send({status:false, Error: err.message })}};
