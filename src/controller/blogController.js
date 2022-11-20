@@ -62,19 +62,20 @@ exports.getBlog = async (req, res) => {
   try {
     if (Object.keys(req.query).length == 0) {
       let blog = await blogModel
-        .find({isPublished:true, isDeleted:false})
+        .find({isDeleted:false, isPublished:true})
         .populate("authorId");
       res.status(200).send({status:true, msg:"no query", msg: blog });
       if (blog.length == 0) {
         res.status(404).send({status:false, msg:"No blogs found"});}}
 
     if (Object.keys(req.query).length !== 0) {
-      
+      req.query.isDeleted=false
+      req.query.isPublished=true
       let filteredBlogs = await blogModel.find(req.query ).populate("authorId");
       if(filteredBlogs.length==0){
         res.status(404).send({status:false, msg:"No blogs found with these filter"})}
-
-      return res.status(200).send({status:true, msg:"query",data: filteredBlogs });}}
+else{
+      return res.status(200).send({status:true, msg:"query",data: filteredBlogs });}}}
 
      catch (error) {
     res.status(500).send({status:false, Error: error.message });}};
@@ -115,10 +116,11 @@ data.publishedAt=today
     let update= await blogModel.findOneAndUpdate({_id:blogId},
       {title:title, body:body, isPublished:isPublished, publishedAt:data.publishedAt, isDeleted:isDeleted, category:category, deletedAt:data.deletedAt, $push:{tags:tags, subcategory:subcategory}},
       {new:true})
-      if(!update){
-res.status(404).send({status:false, msg:'can not update this document.'})
-      }
-    res.status(200).send({ status: true, msg: "blog updated", data: update})
+      if(Object.keys(update).length!==0){
+    res.status(200).send({ status: true, msg: "blog updated", data: update})}
+    else{
+      res.status(404).send({status:false, msg:"can not find to update the document."})
+    }
     
   }
     catch (err) {
@@ -142,10 +144,11 @@ const deleteData = async function (req, res) {
 {isDeleted:true, deletedAt:today},
 {new : true}
     )
-    if(!details){
-      res.status(400).send({status:false, msg:"can not delete this document"})
+    if(Object.keys(details).length!==0){
+    res.status(200).send()}
+    else{
+      res.status(404).send({status:false, msg:'this blog does not exist.'})
     }
-    res.status(200).send()
   } 
     catch (err) {
     res.status(500).send({status:false, Error:err.message});}};
@@ -159,24 +162,28 @@ const deleteData = async function (req, res) {
 exports.deleteByQuery = async function (req, res) {
   try {
     const filter =req.query
+    let{title:title, body:body, category:category, subcategory:subcategory,tags:tags, authorId:authorId}= req.query
+
     
       if(Object.keys(req.query).length==0){
-        res.status(400).send({status:false, msg:"enter atleast one query."})}
+        return res.status(400).send({status:false, msg:"enter atleast one query."})}
        
       let findDocs= await blogModel.find(filter)
 
       if(findDocs.length==0){
         res.status(404).send({status:false, msg: "this blog data is not available"})
       }
+      else{
       let identity= req.identity
       
 
       let deletedata=[]
+      let detail
 for(let i=0; i<findDocs.length; i++){
   if(findDocs[i].authorId==identity){
 
              
-    let detail = await blogModel.findByIdAndUpdate({_id: identity},
+    detail = await blogModel.findOneAndUpdate({authorId:identity,isDelete:false, isPublished:true,$or:[{category:category, subcategory:subcategory, tags:tags, body:body, title:title}]},
       
       { isDeleted: true, deletedAt: new Date() },
       
@@ -185,10 +192,14 @@ for(let i=0; i<findDocs.length; i++){
 
   }
 }
-    if(!deletedata){
-      return res.status(400).send({status:false, msg:"can not delete these blogs. May be they don't exist at your end!!"})}
+    if(deletedata.length!==0){
+      return res.status(200).send();
+     }
+     else{
+      return res.status(400).send({status:false, msg:"can not delete these blogs. May be they don't exist at your end!!"})
+     }}}
 
-    return res.status(200).send();}
+   
     
     catch (err) {
     res.status(500).send({status:false, Error: err.message })}};
