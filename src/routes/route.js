@@ -1,3 +1,5 @@
+// ................................ImportModules.....................................................//
+
 const express = require('express')
 const router = express.Router()
 const authorController = require("../controllers/authorController")
@@ -5,28 +7,36 @@ const mailValidation = require("../middleware/mailValidation")
 const blogController = require('../controllers/blogController')
 const authMiddleWare = require("../middleware/auth")
 
-//creating Author
+//...................................creating Author.................................................//
+
 router.post("/authors", mailValidation.validateEmail, authorController.createAuthor)
 
-//creating blogs
+//...................................creating blogs.................................................//
+
 router.post('/blogs',authMiddleWare.authenticateAuthor, blogController.createBlog)
 
-//getting blogdata
+//...................................getting blogdata..............................................//
+
 router.get('/blogs',authMiddleWare.authenticateAuthor, blogController.getBlogs)
 
-//updating blogdata
+//...................................updating blogdata............................................//
+
 router.put('/blogs/:blogId', authMiddleWare.authenticateAuthor ,authMiddleWare.authoriseAuhtor, blogController.updateBlogs)
 
-//deleting blogdata
+//...................................deleting blogdata............................................//
+
 router.delete('/blogs/:blogId', authMiddleWare.authenticateAuthor ,authMiddleWare.authoriseAuhtor, blogController.deleteBlogs)
 
-//deleting blogdata using query
+//...................................deleting blogdata using query................................//
+
 router.delete('/blogs',authMiddleWare.authenticateAuthor,authMiddleWare.authoriseAuthorfrmQuery, blogController.deleteBlogsUsingQuery)
 
-//login author
+//..................................login author..................................................//
+
 router.post('/login', mailValidation.validateEmail , authorController.loginAuthor)
 
-//some error path
+//..................................some error path..............................................//
+
 router.all('/*',function(req,res){
     return res.status(400).send({status:false,msg:"Please give right path"})
 })
